@@ -1,0 +1,4 @@
+[plugin]
+description = "Dokku monitoring plugin using cAdvisor, node_export, prometheus and grafana"
+version = "0.0.1"
+[plugin.config]
