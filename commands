@@ -3,60 +3,47 @@
 set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
 source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 
-DOKKU_MONIT_DOCKERCOMPOSE="docker/compose:1.23.2"
+DOKKU_JMONIT_DOCKERCOMPOSE="docker/compose:1.23.2"
+DOKKU_JMONIT_PLUGIN_PATH="/var/lib/dokku/plugins/enabled/jmonit"
 
 f_dokku_jmonit_ps() {
-  docker run \
-    -v $(pwd)/docker-compose.yml:/docker-compose.yml \
-    -v $(pwd)/.env:/.env \
-    -v $(pwd)/config:/config \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    $DOKKU_MONIT_DOCKERCOMPOSE ps
+  (cd $DOKKU_JMONIT_PLUGIN_PATH; ./docker-compose ps)
 }
 
 f_dokku_jmonit_start() {
-  docker run \
-    -v $(pwd)/docker-compose.yml:/docker-compose.yml \
-    -v $(pwd)/.env:/.env \
-    -v $(pwd)/config:/config \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    $DOKKU_MONIT_DOCKERCOMPOSE up -d
+  (cd $DOKKU_JMONIT_PLUGIN_PATH; ./docker-compose up -d)
 }
 
 f_dokku_jmonit_stop() {
-  docker run \
-    -v $(pwd)/docker-compose.yml:/docker-compose.yml \
-    -v $(pwd)/.env:/.env \
-    -v $(pwd)/config:/config \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    $DOKKU_MONIT_DOCKERCOMPOSE down
+  (cd $DOKKU_JMONIT_PLUGIN_PATH; ./docker-compose down)
+}
+
+f_dokku_jmonit_rm() {
+  (cd $DOKKU_JMONIT_PLUGIN_PATH; ./docker-compose rm)
 }
 
 f_dokku_jmonit_kill() {
-  docker run \
-    -v $(pwd)/docker-compose.yml:/docker-compose.yml \
-    -v $(pwd)/.env:/.env \
-    -v $(pwd)/config:/config \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    $DOKKU_MONIT_DOCKERCOMPOSE kill
+  (cd $DOKKU_JMONIT_PLUGIN_PATH; ./docker-compose kill)
 }
 
 f_dokku_jmonit_logs() {
-  docker run \
-    -v $(pwd)/docker-compose.yml:/docker-compose.yml \
-    -v $(pwd)/.env:/.env \
-    -v $(pwd)/config:/config \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    $DOKKU_MONIT_DOCKERCOMPOSE logs
+  (cd $DOKKU_JMONIT_PLUGIN_PATH; ./docker-compose logs)
 }
 
 f_dokku_jmonit_install() {
+  f_dokku_jmonit_stop
+  f_dokku_jmonit_rm
   f_dokku_jmonit_start
 }
 
+f_dokku_jmonit_uninstall() {
+  f_dokku_jmonit_stop
+  f_dokku_jmonit_rm
+}
+
 case "$1" in
-  jmonit)
-    f_dokku_jmonit_ps;;
+  #jmonit)
+  #  f_dokku_jmonit_ps;;
 
   jmonit:ps)
     f_dokku_jmonit_ps;;
@@ -70,19 +57,28 @@ case "$1" in
   jmonit:kill)
     f_dokku_jmonit_kill;;
 
-  jmonit:start)
+  jmonit:logs)
     f_dokku_jmonit_logs;;
 
   jmonit:install)
-    f_dokku_jmonit_install ;;
+    f_dokku_jmonit_install;;
 
-  help | jmonit:help)
+  jmonit:uninstall)
+    f_dokku_jmonit_uninstall;;
+
+  jmonit | jmonit:help)
     cat<<EOF
     jmonit, Show the status of jmonit containrs.
     jmonit:logs, See logs for all jmonit running containers.
     jmonit:ps, Show the status of jmonit containers.
     jmonit:start, Start all required jmonit containers.
     jmonit:stop, Stop all jmonit containers.
+EOF
+    ;;
+
+  help)
+    cat<<EOF
+    jmonit
 EOF
     ;;
 

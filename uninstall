@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+
+PLUGIN="$1"
+
+echo "Uninstalling jmonit, stopping and removing containers."
+
+[[ "$PLUGIN" = "jmonit" ]] && dokku jmonit:uninstall
